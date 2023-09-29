@@ -1,3 +1,7 @@
+
+
+
+
 # Overview of the Repository
 
 The purpose of this repository is to interact with GitHub to access the files for our second project in ISA 616.  Below, I also include details about GitHub to help you in working in this environment.
@@ -8,6 +12,12 @@ Annually, the FSB conducts a senior survey of graduates to learn of their employ
 
 The data are anonymized, however it is possible that if you look hard enough, you can identify students.  You are bound, ethically not to do so.  It is a strict ethical code that you will not discuss individual data points with ANYONE except for me and your team.  Failure to comply with this code of ethics will result in a failing grade in the course.  
 
+## Group 16 Project Scope 
+inorder to assist the vice president of development and internal relations in assessing wether having an internship effects a students ability to land a full-time offer we plan to: 
+
+* Conduct a sound analysis to udnerstand the correlation of number of internships to full-time placement.
+* Determine whether having an intenrship has an affect on salary.
+* Provide the client with recommendations on whether internships are worth students time and effort.
 ## Data Sources
 
 You have three years of data representing FSB graduates, including graduates in 2019, 2020, and 2021.  The dataset provided had 42 variables.  The source is either derived by me during data cleaning/merging, from the Oracle Business Intelligence Enterprise Edition (OBIEE) maintained by Miami adminsitration, or from the self reported senior survey.  I have cleaned and merged the files into one file.  
