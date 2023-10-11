@@ -22,7 +22,7 @@ knitr::opts_chunk$set(echo = TRUE,message=FALSE,warning=FALSE)
 rm(list = ls()) # clear global environment
 graphics.off() # close all graphics
 if(require(pacman)==FALSE) install.packages("pacman")
-pacman::p_load(DataExplorer,tidyverse,readxl,zoo,stargazer,kableExtra,skimr,plotly,ggpubr,vtable,tm)
+pacman::p_load(DataExplorer,tidyverse,readxl,zoo,stargazer,kableExtra,skimr,plotly,ggpubr,vtable,tm, fastDummies)
 ```
 
 # Introduction and Purpose
@@ -46,7 +46,6 @@ Describing each data preprocessing step with small chunks of code, output where 
 ```{r}
 summary(data)
 ```
-
 
 ```{r}
 introduce(data)
@@ -77,14 +76,17 @@ plot_bar(data)
 
 ```{r}
 data = data |> 
-  dplyr::select(year.x, GPA.Range, major1, survey_plans, survey_internships, survey_internone, survey_offers, survey_salary, survey_deptfunc)
+  dplyr::select(year.x, GPA.Range, major1, survey_plans, survey_internships, survey_offers, survey_salary, Gender, IPEDS.Race.Ethnicity, latin_honors, `Combined Bacc and Masters`, major2)
 
-data$survey_internships = as.numeric(data$survey_internships )
-data$survey_offers = as.numeric(data$survey_offers)
+data$survey_internships = as.factor(data$survey_internships)
+data$survey_offers = as.factor(data$survey_offers)
 data$year.x = as.factor(data$year.x)
 data$GPA.Range = as.factor(data$GPA.Range)
 data$survey_plans = as.factor(data$survey_plans)
-data$survey_deptfunc = as.factor(data$survey_deptfunc)
+data$ethnicity = as.factor(data$IPEDS.Race.Ethnicity)
+data$latin_honors = as.factor(data$latin_honors)
+data$Gender = as.factor(data$Gender)
+
 ```
 
 ```{r}
@@ -105,10 +107,9 @@ plot_histogram(data)
 ```
 
 ```{r}
-## what do with all the NAs. We cant really do anything with them if we dont have that data --> salary is actually a problem
+## what do with all the NAs. We cant really do anything with them if we don't have that data --> salary is actually a problem
 ## possible missing value indicator and imputation??? idk???
 ```
-
 
 ```{r}
 gpa_major_sm = 
@@ -133,26 +134,20 @@ year_sm =
 ```
 
 ```{r}
-gpa_major_sm
-```
-
-```{r}
-year_sm
-```
-```{r, fig.width=25, fig.height=15}
-ggplot(data = gpa_major_sm, aes(x = major1, y = salary, 
+p = ggplot(data = gpa_major_sm, aes(x = major1, y = salary, 
                                 fill = GPA.Range)) +
   geom_bar(stat = "identity", position = position_dodge(), 
            alpha = 0.75)  +
-  labs(x = "\n Major", y = "Salary\n") +
+  labs(x = "Major", y = "Salary") +
   theme(plot.title = element_text(hjust = 0.5), 
-        axis.title.x = element_text(face="bold", colour="red", 
+        axis.title.x = element_text(face="bold", colour="lightblue", 
                                     size = 12),
-        axis.title.y = element_text(face="bold", colour="red", 
+        axis.title.y = element_text(face="bold", colour="lightblue", 
                                     size = 12),
-        legend.title = element_text(face="bold", size = 10))
+        legend.title = element_text(face="bold", size = 10))+ 
+  theme(axis.text.x = element_text(angle = 45))
+ggplotly(p)
 ```
-
 
 ```{r}
 ## Should we make all the factors dummy for the regression?
@@ -164,44 +159,18 @@ ggplot(data = gpa_major_sm, aes(x = major1, y = salary,
 
 Describing each data preprocessing step with small chunks of code, output where necessary, and documentation
 
-Need to fix: 
-* major1
-* salary
-* maybe survey plans
+Need to fix:
 
-Beacuse salary is relatively normal, we feel it would be appropriate to imputate the mean in this dataset. However, due to the volume of missing rows, we should proceed with caution on any insights we pull from salary. 
+-   major1
 
-```{r}
-major_sm = 
-  data |> 
-  dplyr::group_by(major1) |>
-  dplyr::summarise( 
-    salary = mean(survey_salary, na.rm = TRUE)
-  )
+-   salary
 
-library(tidyr)
+-   maybe survey plans
 
-major_sm %>% gather(name, vals) %>% unique()
-```
-
-```{r}
-majors = list(unique(data$major1))
-```
-
-
-```{r}
-## salary by major
-for (x in majors) {
-  ifelse(data$major1 == as.character(x), 
-  replace(data$survey_salary,
-          is.na(data$survey_salary),
-          mean(major_sm$salary, na.rm =TRUE)), 
-  data$survey_salary = as.numeric(data$survey_salary)
-  )
-}
-```
+Because salary is relatively normal, we feel it would be appropriate to imputate the mean in this dataset. However, due to the volume of missing rows, we should proceed with caution on any insights we pull from salary.
 
 Major1
+
 ```{r}
 unique(data$major1)
 ```
@@ -220,38 +189,70 @@ unique(data$major1)
 
 ```
 
-
-### What is Interdisciplinary Business Management --> is a thing but I don't think it's a thing anymore
+### What is Interdisciplinary Business Management --\> is a thing but I don't think it's a thing anymore
 
 Only 13 observations and no salary data. Will skew analyses
 
-### Entrepreneurship can only be a co-major or minor --> should include major two?
+```{r}
+data = data[data$major1 != "Interdisciplinary Bus Managemt", ]
+```
+
+
+### Entrepreneurship can only be a co-major or minor --\> should include major two?
 
 Including all major 2's adds a lot of levels. Maybe not every co-major combo, but I feel like Entrepreneurship is an important one, since it literally cannot be a single major
 
 ```{r}
-data = data %>%
-  mutate(major1 = ifelse(
-    (major1 == "Entrepreneurship")|(major2 == "Entrepreneurship"), 
-    paste0(as.character(major1), " & ", as.character(major2)), 
-    as.character(major1)))
-
-unique(data$major1)
+data = data |> 
+  dummy_cols(select_columns = 'major2')
 ```
 
-### What's general business --> undecided
+```{r}
+data = data |> 
+  dplyr::select(year.x, GPA.Range, major1, survey_plans, survey_internships, survey_offers, survey_salary, Gender, IPEDS.Race.Ethnicity, latin_honors, `Combined Bacc and Masters`, major2_Entrepreneurship, major2_none)
+```
 
-Only one row and almost all of that data is NA --> drop
+
+### What's general business --\> undecided
+
+Only one row and almost all of that data is NA  --> drop
+```{r}
+data = data[data$major1 != "General Business", ]
+```
+
+Salary 
+```{r}
+  data=data |> 
+  dplyr::group_by(major1) |>
+  mutate(survey_salary=replace(survey_salary,is.na(survey_salary), mean(survey_salary,na.rm=T)))
+```
 
 Checking Survey Plans
+
 ```{r}
 unique(data$survey_plans) 
 ## Looks pretty good. Could maybe just delete where it's NA since this is our response
 ```
 
+Dummies
+
+```{r}
+data = data |> 
+  dummy_cols()
+```
+
+```{r}
+data = data |> 
+  dplyr::select(year.x, GPA.Range, major1, survey_plans, survey_internships, survey_offers, survey_salary, Gender, IPEDS.Race.Ethnicity, latin_honors, `Combined Bacc and Masters`, major2_Entrepreneurship, major2_none)
+```
+
+```{r}
+# Create a new variable "grouped_internship" based on conditions
+data$internship_0 <- ifelse(data$survey_internship == 0, 1, 0)
+data$internship_0 <- ifelse(data$survey_internship == 0, 1, 0)
+```
 
 
 # The rest of your document
 
 Add sections and subsections as necessary to guide your analysis
-
