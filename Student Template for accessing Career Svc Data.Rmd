@@ -27,7 +27,8 @@ pacman::p_load(DataExplorer,tidyverse,readxl,zoo,stargazer,kableExtra,skimr,plot
 
 # Introduction and Purpose
 
-Write something here
+Write something here 
+~ business value prop here probably
 
 # Data Sources
 
@@ -43,9 +44,6 @@ data=readRDS(file = "FSB_BI_Survey_2019_2021.rds")
 
 Describing each data preprocessing step with small chunks of code, output where necessary, and documentation
 
-```{r}
-summary(data)
-```
 
 ```{r}
 introduce(data)
@@ -57,119 +55,59 @@ plot_intro(data)
 
 ```{r}
 plot_missing(data)
-
-##Basically I think we should keep: 
-# year
-# GPA.Range
-# maybe major 1
-# survey plans
-# survey internships
-# survey intern one
-# maybe survey offers
-# survey salary
-# maybe survey dept func
 ```
 
 ```{r}
-plot_bar(data)
+plot_histogram(data$survey_salary)
 ```
+
+```{r}
+plot_bar(data$survey_plans)
+```
+
+```{r}
+plot_bar(data$survey_internships)
+```
+
+
+
+## Variables we want to use
+
+Why we chose said variables (either to control or test)
+
+### subsetting data
 
 ```{r}
 data = data |> 
-  dplyr::select(year.x, GPA.Range, major1, survey_plans, survey_internships, survey_offers, survey_salary, Gender, IPEDS.Race.Ethnicity, latin_honors, `Combined Bacc and Masters`, major2)
+  dplyr::select(year.x, GPA.Range, major1, major2, survey_plans, survey_internships, survey_salary, Gender, IPEDS.Race.Ethnicity, latin_honors, `Combined Bacc and Masters`, survey_state)
+```
 
-data$survey_internships = as.factor(data$survey_internships)
-data$survey_offers = as.factor(data$survey_offers)
+### changing data types
+```{r}
 data$year.x = as.factor(data$year.x)
 data$GPA.Range = as.factor(data$GPA.Range)
 data$survey_plans = as.factor(data$survey_plans)
-data$ethnicity = as.factor(data$IPEDS.Race.Ethnicity)
-data$latin_honors = as.factor(data$latin_honors)
 data$Gender = as.factor(data$Gender)
+data$IPEDS.Race.Ethnicity = as.factor(data$IPEDS.Race.Ethnicity)
+data$`Combined Bacc and Masters` = 
+  as.factor(data$`Combined Bacc and Masters`)
 
-```
-
-```{r}
-introduce(data)
-```
-
-```{r}
-plot_intro(data)
-```
-
-```{r}
-plot_missing(data)
-```
-
-```{r}
-plot_histogram(data)
-## 0, 1, more than 1 for survey_internship
-```
-
-```{r}
-## what do with all the NAs. We cant really do anything with them if we don't have that data --> salary is actually a problem
-## possible missing value indicator and imputation??? idk???
-```
-
-```{r}
-gpa_major_sm = 
-  data |> 
-  dplyr::group_by(GPA.Range, major1) |>
-  dplyr::summarise( 
-    internships = mean(survey_internships, na.rm = TRUE), 
-    offers = mean(survey_offers, na.rm = TRUE), 
-    salary = mean(survey_salary, na.rm = TRUE)
-  )
-```
-
-```{r}
-year_sm = 
-  data |> 
-  dplyr::group_by(year.x) |>
-  dplyr::summarise( 
-    internships = mean(survey_internships, na.rm = TRUE), 
-    offers = mean(survey_offers, na.rm = TRUE), 
-    salary = mean(survey_salary, na.rm = TRUE)
-  )
-```
-
-```{r}
-p = ggplot(data = gpa_major_sm, aes(x = major1, y = salary, 
-                                fill = GPA.Range)) +
-  geom_bar(stat = "identity", position = position_dodge(), 
-           alpha = 0.75)  +
-  labs(x = "Major", y = "Salary") +
-  theme(plot.title = element_text(hjust = 0.5), 
-        axis.title.x = element_text(face="bold", colour="lightblue", 
-                                    size = 12),
-        axis.title.y = element_text(face="bold", colour="lightblue", 
-                                    size = 12),
-        legend.title = element_text(face="bold", size = 10))+ 
-  theme(axis.text.x = element_text(angle = 45))
-ggplotly(p)
-```
-
-```{r}
-## Should we make all the factors dummy for the regression?
-
-## Maybe don't need internone or dept func
+## if the variables aren't encoded here they will be encoded later in the analysis
 ```
 
 # Data Preprocessing
 
-Describing each data preprocessing step with small chunks of code, output where necessary, and documentation
+blurb for presentation
 
-Need to fix:
+## Location Cleaning
 
--   major1
+Controlling for location, had to be cleaned~~
 
--   salary
 
--   maybe survey plans
+## Major1 Cleaning
 
-Because salary is relatively normal, we feel it would be appropriate to imputate the mean in this dataset. However, due to the volume of missing rows, we should proceed with caution on any insights we pull from salary.
-
-Major1
+inconsistencies such as: 
+~~
 
 ```{r}
 unique(data$major1)
@@ -202,14 +140,9 @@ data = data[data$major1 != "Interdisciplinary Bus Managemt", ]
 
 Including all major 2's adds a lot of levels. Maybe not every co-major combo, but I feel like Entrepreneurship is an important one, since it literally cannot be a single major
 
-```{r}
-data = data |> 
-  dummy_cols(select_columns = 'major2')
-```
 
 ```{r}
-data = data |> 
-  dplyr::select(year.x, GPA.Range, major1, survey_plans, survey_internships, survey_offers, survey_salary, Gender, IPEDS.Race.Ethnicity, latin_honors, `Combined Bacc and Masters`, major2_Entrepreneurship, major2_none)
+data[data$major1 == "Entrepreneurship", c("major1", "major2")] <- data[data$major1 == "Entrepreneurship", c("major2", "major1")] 
 ```
 
 
@@ -220,39 +153,68 @@ Only one row and almost all of that data is NA  --> drop
 data = data[data$major1 != "General Business", ]
 ```
 
-Salary 
+## Salary 
 ```{r}
   data=data |> 
   dplyr::group_by(major1) |>
   mutate(survey_salary=replace(survey_salary,is.na(survey_salary), mean(survey_salary,na.rm=T)))
 ```
 
-Checking Survey Plans
+## Internship Condensing
 
+Why we want to separated internships into 0, 1, More than 1~~> easier to interpret
 ```{r}
-unique(data$survey_plans) 
-## Looks pretty good. Could maybe just delete where it's NA since this is our response
-```
-
-Dummies
-
-```{r}
-data = data |> 
-  dummy_cols()
+data$survey_internships = ifelse(
+  (data$survey_internships != "0") & (data$survey_internships != "1"), 
+  'Over 1', 
+  data$survey_internships)
 ```
 
 ```{r}
-data = data |> 
-  dplyr::select(year.x, GPA.Range, major1, survey_plans, survey_internships, survey_offers, survey_salary, Gender, IPEDS.Race.Ethnicity, latin_honors, `Combined Bacc and Masters`, major2_Entrepreneurship, major2_none)
+data$survey_internships = as.factor(data$survey_internships)
+```
+
+## GPA Condensing
+
+Why we want to separated GPA into Low, Med, High
+
+
+## Making Latin Honors Binary
+
+Why we want to make this binary~~
+```{r}
+data$latin_honors = ifelse(
+  data$latin_honors != "0", 
+  1, 
+  0)
 ```
 
 ```{r}
-# Create a new variable "grouped_internship" based on conditions
-data$internship_0 <- ifelse(data$survey_internship == 0, 1, 0)
-data$internship_0 <- ifelse(data$survey_internship == 0, 1, 0)
+data$latin_honors = as.factor(data$latin_honors)
+```
+
+## Making Major2 Binary
+
+Why we want to make this binary~~ (something to control for)
+```{r}
+data$major2 = ifelse(
+  data$major2 != "none", 
+  1, 
+  0)
+```
+
+```{r}
+data$major2 = as.factor(data$major2)
+```
+
+## Drop remaining NAs
+internship and fulltime. Important to our analysis and hard to imputate without skewing or missrepresenting the data, so drop. Went from 3222 to 1828 (if we include state)
+
+```{r}
+data = data |> na.omit()
 ```
 
 
-# The rest of your document
+# Conclusion
 
-Add sections and subsections as necessary to guide your analysis
+~~data's cleaning ready for analysis
