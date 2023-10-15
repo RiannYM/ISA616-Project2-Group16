@@ -1,0 +1,62 @@
+---
+title: "The Effects of Internships on Salary"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+#runtime: shiny
+---
+
+```{r setup, include=FALSE,echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE,message=FALSE,warning=FALSE)
+
+#package initialization
+if(require(pacman)==FALSE) install.packages("pacman")
+pacman::p_load(tidyverse, #for data manipulation
+               plotly, #for interactive plots
+               flexdashboard, #to make a dashboard
+               fontawesome, #for icons
+               DT #for better tables
+               )
+
+#read in data
+#internraw=readRDS("final_intern_data2021.rds")
+```
+
+# Does having an internshp effect salary ? 
+
+## row {data-width=400}
+
+### Answer to the question
+
+## row {data-width=400}
+
+### written insight 1 
+
+## row {data-width=400}
+
+### written insight 2 
+
+# Descriptive visualization of relationships
+
+## column {data-width= 400}
+ 
+### Line graph Year vs Salary
+
+### stacked Bar graph # of internships by major
+
+## column {data-height = 600}
+
+### Region v salary
+
+# Predicitve Model for salary {data-orientation=columns}
+
+## column {data-width=500}
+
+### Regression results
+
+## column {data-width=500}
+
+### Interpretation
+
+### conclusion
+
