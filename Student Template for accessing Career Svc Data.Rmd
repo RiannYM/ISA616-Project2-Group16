@@ -40,6 +40,11 @@ Write something here
 data=readRDS(file = "FSB_BI_Survey_2019_2021.rds")
 ```
 
+```{r}
+geo = read_csv('https://raw.githubusercontent.com/cphalpert/census-regions/master/us%20census%20bureau%20regions%20and%20divisions.csv')
+```
+
+
 # Introductory EDA
 
 Describing each data preprocessing step with small chunks of code, output where necessary, and documentation
@@ -95,6 +100,11 @@ data$`Combined Bacc and Masters` =
 ## if the variables aren't encoded here they will be encoded later in the analysis
 ```
 
+```{r}
+data$State = data$survey_state 
+```
+
+
 # Data Preprocessing
 
 blurb for presentation
@@ -102,6 +112,31 @@ blurb for presentation
 ## Location Cleaning
 
 Controlling for location, had to be cleaned~~
+
+```{r}
+#cleaning the observations 
+# Convert state names to uppercase for consistency
+data$survey_state <- tolower(data$survey_state)
+
+#remove abbreviations
+data$survey_state <- gsub("[^a-zA-Z]", "", data$survey_state)
+
+#convert to numerical representations
+data$survey_state <- match(data$survey_state,
+                           tolower(state.abb))
+
+data$survey_state <- state.name[(data$survey_state)] 
+print(unique(data$survey_state))
+```
+
+```{r}
+data = merge(data, geo, by = "State")
+```
+
+```{r}
+data = data |> 
+  dplyr::select(year.x, GPA.Range, major1, major2, survey_plans, survey_internships, survey_salary, Gender, IPEDS.Race.Ethnicity, latin_honors, `Combined Bacc and Masters`, Region)
+```
 
 
 ## Major1 Cleaning
@@ -142,7 +177,19 @@ Including all major 2's adds a lot of levels. Maybe not every co-major combo, bu
 
 
 ```{r}
-data[data$major1 == "Entrepreneurship", c("major1", "major2")] <- data[data$major1 == "Entrepreneurship", c("major2", "major1")] 
+data$major1 <- as.character(data$major1)
+data$major2 <- as.character(data$major2)
+data[data$major1 == "Entrepreneurship", c("major1", "major2")] <- data[data$major1 == "Entrepreneurship", c("major2", "major1")]
+```
+
+```{r}
+# making major1 a factor again
+# will change major 2 into a binary later
+data$major1 <- as.factor(data$major1)
+```
+
+```{r}
+unique(data$major1)
 ```
 
 
@@ -163,21 +210,18 @@ data = data[data$major1 != "General Business", ]
 ## Internship Condensing
 
 Why we want to separated internships into 0, 1, More than 1~~> easier to interpret
+
 ```{r}
-data$survey_internships = ifelse(
-  (data$survey_internships != "0") & (data$survey_internships != "1"), 
-  'Over 1', 
-  data$survey_internships)
+data$survey_internships <- fct_collapse(data$survey_internships,
+  None = "0",
+  One = "1",
+  MoreThanOne = c("2", "3", "4", "5")
+)
 ```
 
 ```{r}
 data$survey_internships = as.factor(data$survey_internships)
 ```
-
-## GPA Condensing
-
-Why we want to separated GPA into Low, Med, High
-
 
 ## Making Latin Honors Binary
 
@@ -208,7 +252,7 @@ data$major2 = as.factor(data$major2)
 ```
 
 ## Drop remaining NAs
-internship and fulltime. Important to our analysis and hard to imputate without skewing or missrepresenting the data, so drop. Went from 3222 to 1828 (if we include state)
+internship and fulltime. Important to our analysis and hard to imputate without skewing or missrepresenting the data, so drop. Went from 3222 to 1509
 
 ```{r}
 data = data |> na.omit()

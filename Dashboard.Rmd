@@ -36,17 +36,27 @@ pacman::p_load(tidyverse, #for data manipulation
 
 ### written insight 2 
 
-# Descriptive visualization of relationships
+# Salary at a glance
 
 ## column {data-width= 400}
  
-### Line graph Year vs Salary
+### Year v Salary
 
-### stacked Bar graph # of internships by major
+### Salary v Combined Bachelors and Masters
 
 ## column {data-height = 600}
 
 ### Region v salary
+
+# Salary v. Internships {data-orientation=rows}
+
+## Column {data-width=400}
+
+### Salary v. Number of Internships
+
+## Column {data-width=600}
+
+### Salary by Major and Number of Internships
 
 # Predicitve Model for salary {data-orientation=columns}
 
