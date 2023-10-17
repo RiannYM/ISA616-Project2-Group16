@@ -42,23 +42,124 @@ pacman::p_load(tidyverse, #for data manipulation
  
 ### Year v Salary
 
-### Salary v Combined Bachelors and Masters
+```{r}
+salary_by_year <- data %>%
+  group_by(year.x) %>%
+  summarise(avg_salary = mean(survey_salary)) %>%
+  ungroup()
 
+ p = ggplot(salary_by_year, aes(x = year.x, y = avg_salary)) + 
+  geom_bar(stat = 'identity', width = 0.5, fill = 'steelblue')+
+   xlab('Year') + 
+   ylab('Average Salary') +
+   theme_light()
+
+ggplotly(p)
+```
+
+### Salary v Combined Bachelors and Masters
+```{r}
+salary_by_comb <- data %>%
+  group_by(`Combined Bacc and Masters`) %>%
+  summarise(avg_salary = mean(survey_salary)) %>%
+  ungroup()
+
+salary_by_comb$`Combined Bacc and Masters` =
+  as.character(salary_by_comb$`Combined Bacc and Masters`)
+
+salary_by_comb$`Combined Bacc and Masters` = ifelse(salary_by_comb$`Combined Bacc and Masters` == "1", 'Yes', 'No')
+
+ p = ggplot(salary_by_comb, aes(x = `Combined Bacc and Masters`, y = avg_salary)) + 
+  geom_bar(stat = 'identity', width = 0.5, fill = 'steelblue')+
+   xlab('Combined Bachelors and Masters') + 
+   ylab('Average Salary') +
+   theme_light()
+
+ggplotly(p)
+```
 ## column {data-height = 600}
 
 ### Region v salary
+```{r}
+salary_by_region <- data %>%
+  group_by(Region) %>%
+  summarise(avg_salary = mean(survey_salary)) %>%
+  ungroup()
 
+ p = ggplot(salary_by_region, aes(x = Region, y = avg_salary)) +
+   geom_bar(stat = 'identity', width = 0.5, fill = 'steelblue')+
+   xlab('Region') + 
+   ylab('Average Salary') +
+   theme_light()
+
+ggplotly(p)
+```
+
+### Salary v Ethnicity and Gender
+
+```{r}
+salary_by_id <- data %>%
+  group_by(IPEDS.Race.Ethnicity, Gender) %>%
+  summarise(avg_salary = mean(survey_salary)) %>%
+  ungroup()
+
+salary_by_id <- salary_by_id %>%
+    mutate(IPEDS.Race.Ethnicity = recode(
+      IPEDS.Race.Ethnicity, 
+      `American Indian or Alaska Native` = 'Native Am', 
+      `Black or African American` = 'Black'))
+
+ p = ggplot(salary_by_id, aes(x = IPEDS.Race.Ethnicity, y = avg_salary, fill = Gender)) + 
+  geom_bar(stat = 'identity', width = 0.5, color = 'steelblue')+
+   xlab('Combined Bachelors and Masters') + 
+   ylab('Average Salary') +
+   theme_light()+ 
+  theme(axis.text.x = element_text(angle = 45))
+
+ggplotly(p)
+```
+### Salary v Ethnicity and Gender
+
+```{r}
+salary_by_aca <- data %>%
+  group_by(GPA.Range, major1) %>%
+  summarise(avg_salary = mean(survey_salary)) %>%
+  ungroup()
+
+ p = ggplot(salary_by_aca, aes(x = major1, y = avg_salary, fill = GPA.Range)) + 
+  geom_bar(stat = 'identity', width = 0.5, color = 'steelblue')+
+   xlab('Combined Bachelors and Masters') + 
+   ylab('Average Salary') +
+   theme_light()+ 
+  theme(axis.text.x = element_text(angle = 45))
+
+ggplotly(p)
+```
 # Salary v. Internships {data-orientation=rows}
 
 ## Column {data-width=400}
 
 ### Salary v. Number of Internships
+```{r}
+salary_by_internship <- data %>%
+  group_by(survey_internships) %>%
+  summarise(avg_salary = mean(survey_salary)) %>%
+  ungroup()
+
+ p = ggplot(salary_by_internship, aes(x = survey_internships, y = avg_salary)) +
+   geom_bar(stat = 'identity', width = 0.5, fill = 'steelblue')+
+   xlab('Region') + 
+   ylab('Average Salary') +
+   theme_light()
+
+ggplotly(p)
+```
 
 ## Column {data-width=600}
 
 ### Salary by Major and Number of Internships
 
-# Predicitve Model for salary {data-orientation=columns}
+# Regression Model Analysis {data-orientation=columns}
 
 ## column {data-width=500}
 

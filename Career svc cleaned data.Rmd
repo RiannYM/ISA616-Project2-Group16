@@ -3,7 +3,7 @@ title: "Preparing Senior Exit Data for analysis"
 author: "Ri'ann Yates-Miller & Keidward Pichardo"
 output:
   html_document:
-    date: "`r format(Sys.time(), '%d %B, %Y')`"
+    date: "`r format(Sys.time(), '%d, %B, %Y')`"
     code_folding: hide
     df_print: paged
     number_sections: yes
@@ -18,7 +18,7 @@ editor_options:
     wrap: 72
 ---
 
-# Loading Necessary Packages
+# Loading Necessary Packages and Environment
 
 ```{r}
 knitr::opts_chunk$set(echo = TRUE,message=FALSE,warning=FALSE)
@@ -29,6 +29,11 @@ graphics.off() # close all graphics
 if(require(pacman)==FALSE) install.packages("pacman")
 pacman::p_load(DataExplorer,tidyverse,readxl,zoo,stargazer,kableExtra,skimr,plotly,ggpubr,vtable,tm)
 ```
+
+```{r}
+sessionInfo()
+```
+
 
 # Audience and Purpose
 
