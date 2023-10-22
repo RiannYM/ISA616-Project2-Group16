@@ -1,0 +1,207 @@
+---
+title: "The Effects of Internships on Salary"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+#runtime: shiny
+---
+
+```{r setup, include=FALSE,echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE,message=FALSE,warning=FALSE)
+
+#package initialization
+if(require(pacman)==FALSE) install.packages("pacman")
+pacman::p_load(tidyverse, #for data manipulation
+               plotly, #for interactive plots
+               flexdashboard, #to make a dashboard
+               fontawesome, #for icons
+               DT #for better tables
+               )
+
+#read in data
+data = read_csv('cleaned_data.csv')
+```
+
+# Does having an internshp effect salary ? 
+
+## row {data-width=400}
+
+### Answer to the question
+
+## row {data-width=400}
+
+### written insight 1 
+
+## row {data-width=400}
+
+### written insight 2 
+
+# Salary at a glance
+
+## column {data-width= 400}
+
+### Year v Salary
+```{r,echo=FALSE}
+salary_by_year <- data |> 
+  group_by(year.x) |>
+  summarise(avg_salary = mean(survey_salary))
+
+ p = ggplot(salary_by_year, aes(x = year.x, y = avg_salary)) + 
+  geom_bar(stat = 'identity', width = 0.5, fill = 'steelblue')+
+   xlab('Year') + 
+   ylab('Average Salary') +
+   theme_light()
+
+ggplotly(p)
+```
+
+### Region v salary
+```{r,echo=FALSE}
+salary_by_region <- data %>%
+  group_by(Region) %>%
+  summarise(avg_salary = mean(survey_salary))
+
+ p = ggplot(salary_by_region, aes(x = Region, y = avg_salary)) +
+   geom_bar(stat = 'identity', width = 0.5, fill = 'steelblue')+
+   xlab('Region') + 
+   ylab('Average Salary') +
+   theme_light()
+
+ggplotly(p)
+```
+
+## column {data-height = 600}
+### Salary v Ethnicity and Gender
+
+```{r,echo=FALSE}
+options(scipen=999)
+salary_by_id <- data %>%
+  group_by(IPEDS.Race.Ethnicity, Gender) %>%
+  summarise(avg_salary = mean(survey_salary))
+
+salary_by_id <- salary_by_id %>%
+    mutate(IPEDS.Race.Ethnicity = recode(
+      IPEDS.Race.Ethnicity, 
+      `American Indian or Alaska Native` = 'Native Am', 
+      `Black or African American` = 'Black', 
+      `Hispanic/Latino` = 'Latino', 
+      `Non-Resident Alien` = 'Immigrant', 
+      `Multi Racial` = 'Mixed'))
+
+ p = ggplot(salary_by_id, aes(x = IPEDS.Race.Ethnicity, y = avg_salary, fill = Gender)) + 
+  geom_bar(stat = 'identity', width = 0.5, color = 'steelblue')+
+   xlab('Ethnicity') + 
+   ylab('Average Salary') +
+   theme_light()+ 
+  theme(axis.text.x = element_text(angle = 45))
+
+ggplotly(p)
+```
+
+### Salary v Primary Major
+
+```{r,echo=FALSE}
+options(scipen=999)
+salary_by_aca <- data %>%
+  group_by(GPA.Range, major1) %>%
+  summarise(avg_salary = mean(survey_salary))
+
+salary_by_aca <- salary_by_aca %>%
+    mutate(major1 = recode(
+      major1, 
+      `Accountancy` = 'ACC', 
+      `Business Analytics` = 'BA', 
+      `Business Economics` = 'ECO', 
+      `Finance` = 'FIN', 
+      `Human Capital Mgmt & Leadership` = 'HCML',
+      `Information Systems` = 'IS', 
+      `Marketing` = 'MKT',
+      `Supply Chain & Operations Mgmt` = 'SCOM'))
+
+ p = ggplot(salary_by_aca, aes(x = major1, y = avg_salary, fill = GPA.Range)) + 
+  geom_bar(stat = 'identity', width = 0.5, color = 'steelblue')+
+   xlab('Primary Major') + 
+   ylab('Average Salary') +
+   theme_light()+ 
+  theme(axis.text.x = element_text(angle = 45))
+
+ggplotly(p)
+```
+
+
+
+# Salary v. Internships {data-orientation=rows}
+
+## Column {data-width=400}
+
+### Salary v. Number of Internships
+```{r,echo=FALSE}
+salary_by_internship <- data %>%
+  group_by(survey_internships) %>%
+  summarise(avg_salary = mean(survey_salary)) %>%
+  ungroup()
+ p = ggplot(salary_by_internship, aes(x = survey_internships, y = avg_salary)) +
+   geom_bar(stat = 'identity', width = 0.5, fill = 'steelblue')+
+   xlab('Region') + 
+   ylab('Average Salary') +
+   theme_light()
+ggplotly(p)
+```
+
+## Column {data-width=600}
+
+### Salary by Major and Number of Internships
+```{r,echo=FALSE}
+options(scipen=999)
+salary_by_majorint <- data %>%
+  group_by(major1, survey_internships) %>%
+  summarise(avg_salary = mean(survey_salary))
+salary_by_majorint <- salary_by_majorint %>%
+    mutate(major1 = recode(
+      major1, 
+      `Accountancy` = 'ACC', 
+      `Business Analytics` = 'BA', 
+      `Business Economics` = 'ECO', 
+      `Finance` = 'FIN', 
+      `Human Capital Mgmt & Leadership` = 'HCML',
+      `Information Systems` = 'IS', 
+      `Marketing` = 'MKT',
+      `Supply Chain & Operations Mgmt` = 'SCOM'))
+ p = ggplot(salary_by_majorint, aes(x = major1, y = avg_salary, fill = survey_internships)) + 
+  geom_bar(stat = 'identity', width = 0.5, color = 'steelblue')+
+   xlab('Ethnicity') + 
+   ylab('Average Salary') +
+   theme_light()+ 
+  theme(axis.text.x = element_text(angle = 45))
+ggplotly(p)
+```
+# Regression Model Analysis {data-orientation=rows}
+
+## column {data-width=500}
+
+```{r,echo=FALSE}
+reg_control = lm(survey_salary~year.x+GPA.Range+major1+major2+survey_plans+Gender+IPEDS.Race.Ethnicity+latin_honors+`Combined Bacc and Masters`+Region, data = data)
+```
+
+```{r,echo=FALSE}
+test_reg = lm(survey_salary~year.x+GPA.Range+major1+major2+survey_plans+Gender+IPEDS.Race.Ethnicity+latin_honors+`Combined Bacc and Masters`+Region+survey_internships, data = data)
+```
+
+### Change in R-squared {data-width=300}
+```{r,echo=FALSE}
+r_diff = round(summary(test_reg)$r.squared - summary(reg_control)$r.squared, 3)
+
+valueBox(r_diff, icon = 'fa-solid fa-arrows-left-right-to-line') # for a call-out value**
+
+
+# you can find the icons here:https://fontawesome.com/icons
+# note that I have been unable to get all icons to work
+```   
+
+
+## row {data-width=700}
+
+### Interpretation
+
+### conclusion
+
