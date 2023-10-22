@@ -410,6 +410,9 @@ data
 ```
 
 # Conclusion
+```{r}
+write.csv(data, "cleaned_data.csv", row.names=FALSE)
+```
 
 Now that our data is clean and ready for analysis, we will construct a
 regressive model to predict salary.
