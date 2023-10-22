@@ -140,28 +140,31 @@ ggplotly(p)
 
 ### Salary by Major and Number of Internships
 
-# Regression Model Analysis {data-orientation=columns}
+# Regression Model Analysis {data-orientation=rows}
 
 ## column {data-width=500}
 
-### Regression results
 ```{r,echo=FALSE}
 reg_control = lm(survey_salary~year.x+GPA.Range+major1+major2+survey_plans+Gender+IPEDS.Race.Ethnicity+latin_honors+`Combined Bacc and Masters`+Region, data = data)
-```
-
-```{r,echo=FALSE}
-summary(reg_control)
 ```
 
 ```{r,echo=FALSE}
 test_reg = lm(survey_salary~year.x+GPA.Range+major1+major2+survey_plans+Gender+IPEDS.Race.Ethnicity+latin_honors+`Combined Bacc and Masters`+Region+survey_internships, data = data)
 ```
 
+### Change in R-squared {data-width=300}
 ```{r,echo=FALSE}
-summary(test_reg)
-```
+r_diff = round(summary(test_reg)$r.squared - summary(reg_control)$r.squared, 3)
 
-## column {data-width=500}
+valueBox(r_diff, icon = 'fa-solid fa-arrows-left-right-to-line') # for a call-out value**
+
+
+# you can find the icons here:https://fontawesome.com/icons
+# note that I have been unable to get all icons to work
+```   
+
+
+## row {data-width=700}
 
 ### Interpretation
 
