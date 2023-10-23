@@ -27,14 +27,24 @@ data = read_csv('cleaned_data.csv')
 ## row {data-width=400}
 
 ### Answer to the question
+Through the analysis of the data gathered by the senior exit survey from 2019-2021, we found that, for those students who landed a full-time job, whether or not they had an internship only slightly affected their earnings. However, we believe this difference in earnings coupled with the poor results from our regression analysis shows that salary is not significantly affected by the number of internships. Other factors, such as major, appear to have a much greater effect on salary.
 
 ## row {data-width=400}
+
 
 ### written insight 1 
+The original data had about 40% of the salary observations missing. To handle this we imputed these observations with the mean salary for each major. The results of the data could have been skewed due to these missing observations, thus a more robust data set may be needed to better predict the effect of internship on salary. The following insights are provided with this in mind.
 
 ## row {data-width=400}
 
-### written insight 2 
+### written insight 2
+Our analysis shows that the increase in those who had no internship versus those who had one internship is about 2 thousand dollars.
+The salary increase from one internship to more than one is also about 2 thousand dollars. This does not show a significant difference in salary between the observations. When weighing the opportunity costs of spending a summer doing an internship or not, the salary increase should not be the desired outcome. A focus on obtaining skills that companies are willing to pay more for may be a better use of a student's summer. This can be done by taking courses that diversify a student's skill set during the summer. 
+
+## row {data-width=400}
+
+### written insight 3 
+The data shows that other variables, such as major, have a greater effect on salary, our graphs show that the average salary for those students who majored in Business Analytics or ISA is higher than all other majors. For example, the difference in the average salary of Human Capital Management majors and ISA majors who did not have an internship is about 10 thousand dollars. If the client wishes to entice students to intern based on salary increase, the 2 thousand dollar difference in salary is a lot less enticing. If a student's desired outcome is a higher salary, skills that appear to bring higher pay such as more technical ones obtained through the ISA major may be preferred.
 
 # Salary at a glance
 
@@ -142,7 +152,7 @@ salary_by_internship <- data %>%
   ungroup()
  p = ggplot(salary_by_internship, aes(x = survey_internships, y = avg_salary)) +
    geom_bar(stat = 'identity', width = 0.5, fill = 'steelblue')+
-   xlab('Region') + 
+   xlab('Number of Internships') + 
    ylab('Average Salary') +
    theme_light()
 ggplotly(p)
@@ -169,7 +179,7 @@ salary_by_majorint <- salary_by_majorint %>%
       `Supply Chain & Operations Mgmt` = 'SCOM'))
  p = ggplot(salary_by_majorint, aes(x = major1, y = avg_salary, fill = survey_internships)) + 
   geom_bar(stat = 'identity', width = 0.5, color = 'steelblue')+
-   xlab('Ethnicity') + 
+   xlab('Major') + 
    ylab('Average Salary') +
    theme_light()+ 
   theme(axis.text.x = element_text(angle = 45))
@@ -198,10 +208,10 @@ valueBox(r_diff, icon = 'fa-solid fa-arrows-left-right-to-line') # for a call-ou
 # note that I have been unable to get all icons to work
 ```   
 
-
 ## row {data-width=700}
 
 ### Interpretation
+To assess the effects of internships on salary we constructed two predictive models using multiple linear regression. in order to determine if internships has an effect on salary we analyzed the performance of the two models. The first model serves as a control model predicting salary with out internships being accounted for. The second model is the test model, taking the number of internships into account. In our models, we also included the variables we considered would have an effect on salary in order to control for them and ensure the accuracy of our models. To assess the importance of internships on salary we will test whether the models performance is increased by the addition of the variable. This will be done by analyzing the difference within the R-squared value of the models. With this method we found that, as shown above,there is a very small change in R-squared from the control to the test model. 
 
 ### conclusion
-
+the variable survey_internships  does not greatly increase the percent variance that is accounted for in the model. There is only a difference in R-squared of .016 between the control and test models. This implies that internships does not greatly affect the models ability to predict salary. Therefor it can be concluded that the model performs almost identically with or without the internship variable. 
