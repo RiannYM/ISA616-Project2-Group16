@@ -53,9 +53,9 @@ The data shows that other variables, such as major, have a greater effect on sal
 ### Year v Salary
 ```{r,echo=FALSE}
 salary_by_year <- data |> 
-  group_by(year.x) |>
+  group_by(year.x) |> #grouping mean salary by year
   summarise(avg_salary = mean(survey_salary))
-
+# obtaining a bar graph of salary by year 
  p = ggplot(salary_by_year, aes(x = year.x, y = avg_salary)) + 
   geom_bar(stat = 'identity', width = 0.5, fill = 'steelblue')+
    xlab('Year') + 
@@ -69,8 +69,8 @@ ggplotly(p)
 ```{r,echo=FALSE}
 salary_by_region <- data %>%
   group_by(Region) %>%
-  summarise(avg_salary = mean(survey_salary))
-
+  summarise(avg_salary = mean(survey_salary)) #grouping mean salary by region 
+# obtaining a bar graph of salary by region
  p = ggplot(salary_by_region, aes(x = Region, y = avg_salary)) +
    geom_bar(stat = 'identity', width = 0.5, fill = 'steelblue')+
    xlab('Region') + 
@@ -84,11 +84,12 @@ ggplotly(p)
 ### Salary v Ethnicity and Gender
 
 ```{r,echo=FALSE}
-options(scipen=999)
+options(scipen=999) # preventing scientific notation
 salary_by_id <- data %>%
   group_by(IPEDS.Race.Ethnicity, Gender) %>%
-  summarise(avg_salary = mean(survey_salary))
+  summarise(avg_salary = mean(survey_salary))# grouping salary by race ethenicity and gender
 
+#abbreviating names for better graphical display
 salary_by_id <- salary_by_id %>%
     mutate(IPEDS.Race.Ethnicity = recode(
       IPEDS.Race.Ethnicity, 
@@ -97,7 +98,7 @@ salary_by_id <- salary_by_id %>%
       `Hispanic/Latino` = 'Latino', 
       `Non-Resident Alien` = 'Immigrant', 
       `Multi Racial` = 'Mixed'))
-
+# salary by race ethnicity and gender
  p = ggplot(salary_by_id, aes(x = IPEDS.Race.Ethnicity, y = avg_salary, fill = Gender)) + 
   geom_bar(stat = 'identity', width = 0.5, color = 'steelblue')+
    xlab('Ethnicity') + 
@@ -111,11 +112,12 @@ ggplotly(p)
 ### Salary v Primary Major
 
 ```{r,echo=FALSE}
-options(scipen=999)
+options(scipen=999)# preventing scientific notation
 salary_by_aca <- data %>%
   group_by(GPA.Range, major1) %>%
-  summarise(avg_salary = mean(survey_salary))
+  summarise(avg_salary = mean(survey_salary)) # grouping salary by GPA range and major
 
+#abbreviating names for better graphical display
 salary_by_aca <- salary_by_aca %>%
     mutate(major1 = recode(
       major1, 
@@ -127,7 +129,7 @@ salary_by_aca <- salary_by_aca %>%
       `Information Systems` = 'IS', 
       `Marketing` = 'MKT',
       `Supply Chain & Operations Mgmt` = 'SCOM'))
-
+# obtaining a graph of salary by major and gpa range
  p = ggplot(salary_by_aca, aes(x = major1, y = avg_salary, fill = GPA.Range)) + 
   geom_bar(stat = 'identity', width = 0.5, color = 'steelblue')+
    xlab('Primary Major') + 
@@ -148,8 +150,9 @@ ggplotly(p)
 ```{r,echo=FALSE}
 salary_by_internship <- data %>%
   group_by(survey_internships) %>%
-  summarise(avg_salary = mean(survey_salary)) %>%
+  summarise(avg_salary = mean(survey_salary)) %>% #grouping salary by number of internships
   ungroup()
+#obtaining a graph of salay by number of internships
  p = ggplot(salary_by_internship, aes(x = survey_internships, y = avg_salary)) +
    geom_bar(stat = 'identity', width = 0.5, fill = 'steelblue')+
    xlab('Number of Internships') + 
@@ -162,10 +165,10 @@ ggplotly(p)
 
 ### Salary by Major and Number of Internships
 ```{r,echo=FALSE}
-options(scipen=999)
+options(scipen=999)# preventing scientific notation
 salary_by_majorint <- data %>%
   group_by(major1, survey_internships) %>%
-  summarise(avg_salary = mean(survey_salary))
+  summarise(avg_salary = mean(survey_salary)) #grouping mean salary by major and internships 
 salary_by_majorint <- salary_by_majorint %>%
     mutate(major1 = recode(
       major1, 
@@ -176,7 +179,8 @@ salary_by_majorint <- salary_by_majorint %>%
       `Human Capital Mgmt & Leadership` = 'HCML',
       `Information Systems` = 'IS', 
       `Marketing` = 'MKT',
-      `Supply Chain & Operations Mgmt` = 'SCOM'))
+      `Supply Chain & Operations Mgmt` = 'SCOM')) #abbreviating names for better graphical display
+
  p = ggplot(salary_by_majorint, aes(x = major1, y = avg_salary, fill = survey_internships)) + 
   geom_bar(stat = 'identity', width = 0.5, color = 'steelblue')+
    xlab('Major') + 
@@ -190,18 +194,19 @@ ggplotly(p)
 ## column {data-width=500}
 
 ```{r,echo=FALSE}
-reg_control = lm(survey_salary~year.x+GPA.Range+major1+major2+survey_plans+Gender+IPEDS.Race.Ethnicity+latin_honors+`Combined Bacc and Masters`+Region, data = data)
+reg_control = lm(survey_salary~year.x+GPA.Range+major1+major2+survey_plans+Gender+IPEDS.Race.Ethnicity+latin_honors+`Combined Bacc and Masters`+Region, data = data) #control regression excluding internships
 ```
 
 ```{r,echo=FALSE}
-test_reg = lm(survey_salary~year.x+GPA.Range+major1+major2+survey_plans+Gender+IPEDS.Race.Ethnicity+latin_honors+`Combined Bacc and Masters`+Region+survey_internships, data = data)
+test_reg = lm(survey_salary~year.x+GPA.Range+major1+major2+survey_plans+Gender+IPEDS.Race.Ethnicity+latin_honors+`Combined Bacc and Masters`+Region+survey_internships, data = data) # test regression including internships
 ```
 
 ### Change in R-squared {data-width=300}
 ```{r,echo=FALSE}
-r_diff = round(summary(test_reg)$r.squared - summary(reg_control)$r.squared, 3)
+r_diff = round(summary(test_reg)$r.squared - summary(reg_control)$r.squared, 3) # obtaining only the difference in R squared to display
 
-valueBox(r_diff, icon = 'fa-solid fa-arrows-left-right-to-line') # for a call-out value**
+#displaing the difference in R squared within a value box
+valueBox(r_diff, icon = 'fa-solid fa-arrows-left-right-to-line') # for a call-out value** 
 
 
 # you can find the icons here:https://fontawesome.com/icons
@@ -210,8 +215,8 @@ valueBox(r_diff, icon = 'fa-solid fa-arrows-left-right-to-line') # for a call-ou
 
 ## row {data-width=700}
 
-### Interpretation
-To assess the effects of internships on salary we constructed two predictive models using multiple linear regression. in order to determine if internships has an effect on salary we analyzed the performance of the two models. The first model serves as a control model predicting salary with out internships being accounted for. The second model is the test model, taking the number of internships into account. In our models, we also included the variables we considered would have an effect on salary in order to control for them and ensure the accuracy of our models. To assess the importance of internships on salary we will test whether the models performance is increased by the addition of the variable. This will be done by analyzing the difference within the R-squared value of the models. With this method we found that, as shown above,there is a very small change in R-squared from the control to the test model. 
+### Model comparison explained
+To assess the effects of internships on salary we constructed two predictive models using multiple linear regression. in order to determine if internships has an effect on salary we analyzed the performance of the two models. The first model serves as a control model predicting salary with out internships being accounted for. The second model is the test model, taking the number of internships into account. In our models, we also included the variables we considered would have an effect on salary in order to control for them and ensure the accuracy of our models. To assess the importance of internships on salary we will test whether the models performance is increased by the addition of the variable. This will be done by analyzing the difference within the R-squared value of the models. The R-squared value determines the percent variance(change) in the dependent variable that can be explained by the independent variable. With this method we found that, as shown above,there is a very small change in R-squared from the control to the test model. 
 
 ### conclusion
 the variable survey_internships  does not greatly increase the percent variance that is accounted for in the model. There is only a difference in R-squared of .016 between the control and test models. This implies that internships does not greatly affect the models ability to predict salary. Therefor it can be concluded that the model performs almost identically with or without the internship variable. 
