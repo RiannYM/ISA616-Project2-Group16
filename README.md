@@ -58,6 +58,12 @@ You have three years of data representing FSB graduates, including graduates in 
 41.  survey_salary: numeric, survey, student reported salary
 42.  survey_state: text, survey, student reported state in which job is located
 
+## Project Deliverable 
+The final Deliverable will contain: 
+* A RMD file that was used to prepare the data for interpretation. The file contains information on what was done to clean and prepare the data for the purpose of the analysis. The file is easily reproducible with commentary one each decison made in the data cleaning process along with an explanation for the reasoning behind said decisions.
+* The CSV with the cleaned data exported from the RMD
+* The original data provided prior to the data cleaning
+* A dhasboard deliverable containing 3 insights and recommendations along with various interactive graphs and visuals to support the analysis and findings provided to the client
 # Conclusion of Project
 
 The conclusion of the testing is that the number of internships, by itself, does not have a significantly high relationship with the salary students receive after graduation.
